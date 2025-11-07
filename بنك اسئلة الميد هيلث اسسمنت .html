@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examination System - by Mohamed Salah</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-light: #dbeafe;
+            --primary-dark: #1e40af;
+            --secondary-color: #f59e0b;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --light-bg: #f8fafc;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            --highlight-color: #fef08a;
+            --explanation-bg: #FFF9E6;
+            --correct-bg: #d1fae5;
+            --wrong-border: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-bg);
+            color: #334155;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .arabic {
+            font-family: 'Cairo', sans-serif;
+            direction: rtl;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1.5rem 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .heart {
+            display: inline-block;
+            color: #ff4d6d;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .lecture-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .lecture-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .lecture-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .lecture-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+        }
+
+        .lecture-card p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .exam-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .exam-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .exam-title h2 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .exam-title p {
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .timer-container {
+            text-align: center;
+        }
+
+        .timer {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            background-color: var(--primary-light);
+            display: inline-block;
+            min-width: 120px;
+        }
+
+        .timer.warning {
+            color: var(--secondary-color);
+            background-color: #fef3c7;
+        }
+
+        .timer.danger {
+            color: var(--danger-color);
+            background-color: #fee2e2;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 4px;
+            transition: width 1s linear;
+        }
+
+        .questions-container {
+            margin-bottom: 2rem;
+        }
+
+        .question-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .difficulty {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .difficulty.easy {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .difficulty.medium {
+            background-color: #fed7aa;
+            color: #92400e;
+        }
+
+        .difficulty.hard {
+            background-color: #fecaca;
+            color: #991b1b;
+        }
+
+        .question-text {
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+        }
+
+        .choice:hover {
+            background-color: var(--primary-light);
+        }
+
+        .choice input[type="radio"] {
+            margin-right: 0.75rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            padding: 1rem 0;
+            margin-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #334155;
+        }
+
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
+
+        .results-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .score-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .score {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 1rem 0;
+        }
+
+        .message {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-question {
+            background-color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .result-question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .highlight {
+            background-color: var(--highlight-color);
+            padding: 0 0.2rem;
+        }
+
+        .correct-answer {
+            background-color: var(--correct-bg);
+            padding: 0.5rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+        }
+
+        .wrong-answer {
+            border: 2px solid var(--wrong-border);
+            padding: 0.5rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+        }
+
+        .explanation {
+            background-color: var(--explanation-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: auto;
+        }
+
+        @media (max-width: 768px) {
+            main {
+                padding: 1rem;
+            }
+            
+            .exam-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Examination System - by Mohamed Salah</h1>
+        <p class="arabic">صلّ على النبي ﷺ <span class="heart">❤️</span></p>
+    </header>
+
+    <main>
+        <div id="homePage">
+            <div class="lecture-cards" id="lectureCards">
+                <!-- Lecture cards will be dynamically generated here -->
+            </div>
+        </div>
+
+        <div id="examPage" class="exam-container">
+            <div class="exam-header">
+                <div class="exam-title">
+                    <h2 id="examTitle"></h2>
+                    <p class="arabic">by Mohamed Salah - صلّ على النبي ﷺ <span class="heart">❤️</span></p>
+                </div>
+                <div class="timer-container">
+                    <div id="timer" class="timer">15:00</div>
+                    <div class="progress-bar">
+                        <div id="progress" class="progress"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="questions-container" id="questionsContainer">
+                <!-- Questions will be dynamically generated here -->
+            </div>
+
+            <div class="action-buttons">
+                <button id="backToHome" class="btn btn-secondary">Back to Main Menu</button>
+                <button id="finishExam" class="btn btn-primary">Finish Exam</button>
+            </div>
+        </div>
+
+        <div id="resultsPage" class="results-container">
+            <div class="score-card">
+                <h2>Your Results</h2>
+                <div class="score" id="scoreDisplay"></div>
+                <p class="message" id="messageDisplay"></p>
+            </div>
+
+            <div id="resultsContainer">
+                <!-- Results will be dynamically generated here -->
+            </div>
+
+            <div class="action-buttons">
+                <button id="retakeExam" class="btn btn-secondary">🔁 Retake Exam</button>
+                <button id="backToHomeFromResults" class="btn btn-primary">🏠 Back to Main Menu</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Developed by Mohamed Salah</p>
+    </footer>
+
+    <script>
+        // Exam data
+        const examData = {
+            "lecture1": {
+                "title": "Assessment of the Skin, Hair, and Nails",
+                "questions": [
+                    {
+                        "id": 1,
+                        "level": "easy",
+                        "question": "What percentage of body weight does the skin account for?",
+                        "choices": [
+                            "A) 5%",
+                            "B) 10%",
+                            "C) 15%",
+                            "D) 20%"
+                        ],
+                        "correct": 2,
+                        "keywords": ["skin", "body weight", "percentage"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الجلد هو أكبر عضو في الجسم ويمثل حوالي 15% من وزن الجسم. هذه المعلومة مذكورة في المحاضرة حيث يُشار إلى أن الجلد هو أكبر عضو في الجسم ويمثل 15% من وزن الجسم. الخيارات الأخرى (5%، 10%، 20%) غير صحيحة لأنها لا تتطابق مع المعلومات المقدمة في المحاضرة."
+                    },
+                    {
+                        "id": 2,
+                        "level": "easy",
+                        "question": "How many layers does the skin consist of?",
+                        "choices": [
+                            "A) 1 layer",
+                            "B) 2 layers",
+                            "C) 3 layers",
+                            "D) 4 layers"
+                        ],
+                        "correct": 2,
+                        "keywords": ["skin", "layers", "epidermis", "dermis", "subcutaneous"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الجلد يتكون من 3 طبقات حسب المعلومات المذكورة في المحاضرة: الطبقة الخارجية (البشرة)، الطبقة الوسطى (الأدمة)، والطبقة الداخلية (الدهن تحت الجلد). الخيارات الأخرى غير صحيحة لأنها لا تتطابق مع التشريح الصحيح للجلد كما هو موصوف في المحاضرة."
+                    },
+                    {
+                        "id": 3,
+                        "level": "easy",
+                        "question": "Which cells in the skin produce pigment?",
+                        "choices": [
+                            "A) Keratinocytes",
+                            "B) Melanocytes",
+                            "C) Sebaceous glands",
+                            "D) Sweat glands"
+                        ],
+                        "correct": 1,
+                        "keywords": ["pigment", "melanocytes", "skin cells"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الخلايا التي تنتج الصبغة في الجلد هي الخلايا الميلانينية (Melanocytes). كما هو مذكور في المحاضرة، هذه الخلايا تقع في الطبقة القاعدية من البشرة وتنتج الميلانين الذي يعطي اللون للبشرة. الخلايا الكيراتينية تنتج الكيراتين، والغدد الدهنية تنتج الزيوت، والغدد العرقية تنتج العرق."
+                    },
+                    {
+                        "id": 4,
+                        "level": "easy",
+                        "question": "What is the primary function of sebum?",
+                        "choices": [
+                            "A) Temperature regulation",
+                            "B) Vitamin production",
+                            "C) Lubrication of the skin",
+                            "D) Protection against UV rays"
+                        ],
+                        "correct": 2,
+                        "keywords": ["sebum", "lubrication", "sebaceous glands"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الوظيفة الأساسية للزهم (sebum) هي تزييت الجلد. كما هو مذكور في المحاضرة، الغدد الدهنية في الأدمة تنتج الزهم لتزييت الجلد. تنظيم درجة الحرارة يتم عن طريق الغدد العرقية، وإنتاج الفيتامينات يحدث بفعل أشعة الشمس، والحماية من الأشعة فوق البنفسجية تتم بواسطة الميلانين."
+                    },
+                    {
+                        "id": 5,
+                        "level": "easy",
+                        "question": "Which vitamin is produced through exposure to sunlight?",
+                        "choices": [
+                            "A) Vitamin A",
+                            "B) Vitamin B",
+                            "C) Vitamin C",
+                            "D) Vitamin D"
+                        ],
+                        "correct": 3,
+                        "keywords": ["vitamin", "sunlight", "UV rays"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... فيتامين د هو الفيتامين الذي يتم إنتاجه من خلال التعرض لأشعة الشمس. كما هو مذكور في المحاضرة، التعرض للأشعة فوق البنفسجية من الشمس يحول المواد اللازمة لتخليق فيتامين د. الفيتامينات الأخرى (أ، ب، ج) لا يتم إنتاجها بهذه الطريقة."
+                    },
+                    {
+                        "id": 6,
+                        "level": "medium",
+                        "question": "What does cyanosis indicate?",
+                        "choices": [
+                            "A) Increased blood supply in superficial capillaries",
+                            "B) Loss of oxygenation of the underlying tissue",
+                            "C) Increased amounts of bilirubin in the blood",
+                            "D) Arterial insufficiency or anemia"
+                        ],
+                        "correct": 1,
+                        "keywords": ["cyanosis", "blue discoloration", "oxygenation"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الزرقة (cyanosis) تشير إلى فقدان الأكسجين في الأنسجة الكامنة. كما هو مذكور في المحاضرة، الزرقة هي تغير لوني أزرق في الشفاه أو سرير الأظافر نتيجة لنقص الأكسجين. الخيار أ (زيادة إمداد الدم) يسبب الاحمرار، الخيار ج (زيادة البيليروبين) يسبب اليرقان، والخيار د (قصور شريعي أو فقر دم) يسبب الشحوب."
+                    },
+                    {
+                        "id": 7,
+                        "level": "medium",
+                        "question": "How is skin turgor assessed?",
+                        "choices": [
+                            "A) By measuring skin temperature",
+                            "B) By pinching the skin and observing how quickly it returns to place",
+                            "C) By inspecting skin color",
+                            "D) By palpating for lesions"
+                        ],
+                        "correct": 1,
+                        "keywords": ["skin turgor", "elasticity", "dehydration"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... يتم تقييم مرونة الجلد (skin turgor) عن طريق قرص الجلد وملاحظة سرعة عودته إلى مكانه. كما هو مذكور في المحاضرة، الجلد الطبيعي يعود إلى شكله الأصلي في أقل من 30 ثانية. إذا استغرق أكثر من 30 ثانية، فقد يشير ذلك إلى الجفاف. الخيارات الأخرى تمثل طرق تقييم مختلفة للجلد ولكنها ليست طريقة تقييم المرونة."
+                    },
+                    {
+                        "id": 8,
+                        "level": "medium",
+                        "question": "What is the difference between erosion and ulcer?",
+                        "choices": [
+                            "A) Erosion is deeper than ulcer",
+                            "B) Ulcer is deeper than erosion",
+                            "C) Erosion affects only the dermis",
+                            "D) Ulcer affects only the epidermis"
+                        ],
+                        "correct": 1,
+                        "keywords": ["erosion", "ulcer", "skin layers", "depth"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الفرق بين التآكل (erosion) والقرحة (ulcer) هو العمق. كما هو مذكور في المحاضرة، التآكل هو فقدان البشرة فقط ولا يمتد إلى أعماق، بينما القرحة هي فقدان أعمق لسطح الجلد يمتد إلى الأدمة أو تحتها. الخيارات الأخرى غير صحيحة لأنها تعكس الفهم العكسي للعمق."
+                    },
+                    {
+                        "id": 9,
+                        "level": "medium",
+                        "question": "What does clubbing of fingers indicate?",
+                        "choices": [
+                            "A) Anemia",
+                            "B) Local infection",
+                            "C) Hypoxia",
+                            "D) Poor hygiene"
+                        ],
+                        "correct": 2,
+                        "keywords": ["clubbing", "fingers", "hypoxia", "angle"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... تضخم أطراف الأصابع (clubbing) يشير إلى نقص الأكسجين (hypoxia). كما هو مذكور في المحاضرة، تضخم الأصابع حيث يصبح الزاوية بين قاعدة الظفر والجلد أكبر من 180 درجة يمكن أن يحدث بسبب نقص الأكسجين. فقر الدم يسبب تقعر الأظافر (koilonychia)، والعدوى الموضعية تسبب التهاب حول الظفر (paronychia)، ونقص النظافة يسبب أظافر متسخة ومكسورة."
+                    },
+                    {
+                        "id": 10,
+                        "level": "medium",
+                        "question": "What is the normal capillary refill time?",
+                        "choices": [
+                            "A) Less than 1 second",
+                            "B) Less than 2 seconds",
+                            "C) Less than 3 seconds",
+                            "D) Less than 4 seconds"
+                        ],
+                        "correct": 1,
+                        "keywords": ["capillary refill", "time", "circulation"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... وقت إعادة امتلاء الشعيرات الدموية الطبيعي هو أقل من ثانيتين. كما هو مذكور في المحاضرة، عند الضغط على سرير الظفر، يجب أن يعود اللون الوردي فورًا عند تحرير الضغط. إذا استغرق عودة اللون الوردي أكثر من ثانيتين، فقد يشير ذلك إلى أمراض الجهاز التنفسي أو القلبي التي تسبب نقص الأكسجين."
+                    },
+                    {
+                        "id": 11,
+                        "level": "hard",
+                        "question": "What is the clinical significance of koilonychia?",
+                        "choices": [
+                            "A) Hypoxia",
+                            "B) Anemia",
+                            "C) Local infection",
+                            "D) Fungal infection"
+                        ],
+                        "correct": 1,
+                        "keywords": ["koilonychia", "spoon-shaped", "anemia"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الأهمية السريرية لتقعر الأظافر (koilonychia) هي أنها قد تشير إلى فقر الدم. كما هو مذكور في المحاضرة، تقعر الأظافر يتمثل في الشكل المقعر للظفر، مما ينتج عنه ظفر \"على شكل ملعقة\"، ويُرى في حالات فقر الدم. نقص الأكسجين يسبب تضخم الأصابع (clubbing)، والعدوى الموضعية تسبب التهاب حول الظفر (paronychia)، والعدوى الفطرية تسبب تغير لون الظفر إلى الأصفر."
+                    },
+                    {
+                        "id": 12,
+                        "level": "hard",
+                        "question": "Which of the following is NOT a question to ask in health history for skin assessment?",
+                        "choices": [
+                            "A) Ask if patient works or spends excessive time outside",
+                            "B) Determine whether patient has history of allergies",
+                            "C) Ask if patient uses topical medications or home remedies",
+                            "D) Ask if patient has experienced changes in vision"
+                        ],
+                        "correct": 3,
+                        "keywords": ["health history", "skin assessment", "questions"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... سؤال المريض عما إذا كان قد عاني من تغيرات في الرؤية ليس من الأسئلة المعتادة في تقييم تاريخ الجلد. كما هو مذكور في المحاضرة، الأسئلة تشمل: التغيرات في الجلد مثل الجفاف أو الحكة أو القروح، والصدمات الحديثة، والتعرض لأشعة الشمس، وتاريخ الحساسية، واستخدام الأدوية الموضعية، والتاريخ العائلي لأمراض الجلد. التغيرات في الرؤية هي جزء من تقييم العين وليس الجلد."
+                    },
+                    {
+                        "id": 13,
+                        "level": "hard",
+                        "question": "What are the characteristics to inspect when examining skin lesions?",
+                        "choices": [
+                            "A) Color, elevation, size, content, border, location",
+                            "B) Temperature, moisture, texture, mobility, turgor",
+                            "C) Color, hygiene, integrity, lesions",
+                            "D) Texture, moisture, temperature, turgor, edema"
+                        ],
+                        "correct": 0,
+                        "keywords": ["skin lesions", "inspection", "characteristics"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الخصائص التي يجب فحصها عند فحص آفات الجلد هي: اللون، الارتفاع، الحجم، المحتوى، الحدود، والموقع. كما هو مذكور في المحاضرة، عند فحص آفات الجلد، يجب ملاحظة هذه الخصائص. الخيار ب يتعلق بخصائص الجلد العامة عند الجس، الخيار ج يتعلق بفحص الجلد العام، والخيار د يتعلق بخصائص الجلد عند الجس."
+                    },
+                    {
+                        "id": 14,
+                        "level": "hard",
+                        "question": "What is the proper technique for palpating lymph nodes?",
+                        "choices": [
+                            "A) Use the tips of fingers 2, 3, 4 in gentle circular motion",
+                            "B) Use the thumb to press firmly on the lymph nodes",
+                            "C) Use the entire hand to apply deep pressure",
+                            "D) Use one finger to apply light pressure"
+                        ],
+                        "correct": 0,
+                        "keywords": ["lymph nodes", "palpation", "technique"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... التقنية الصحيحة لجس العقد الليمفاوية هي استخدام أطراف الأصابع 2، 3، 4 في حركة دائرية لطيفة. كما هو مذكور في المحاضرة، يتم جس العقد الليمفاوية بلطف باستخدام وسائد الأصابع 2، 3، 4 في حركة دائرية لطيفة، مع الضغط الخفيف ثم زيادة الضغط تدريجياً. الخيارات الأخرى غير صحيحة لأنها لا تتبع التقنية الصحيحة الموصوفة في المحاضرة."
+                    },
+                    {
+                        "id": 15,
+                        "level": "hard",
+                        "question": "What does onycholysis indicate?",
+                        "choices": [
+                            "A) Anemia",
+                            "B) Hypoxia",
+                            "C) Decreased circulation or trauma",
+                            "D) Fungal infection"
+                        ],
+                        "correct": 2,
+                        "keywords": ["onycholysis", "nail detachment", "circulation"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... انفصال الظفر (onycholysis) يشير إلى انخفاض الدورة الدموية أو الصدمة. كما هو مذكور في المحاضرة، انفصال صفيحة الظفر عن سرير الظفر يمكن أن يحدث بسبب انخفاض الدورة الدموية. فقر الدم يسبب تقعر الأظافر (koilonychia)، ونقص الأكسجين يسبب تضخم الأصابع (clubbing)، والعدوى الفطرية تسبب تغير لون الظفر إلى الأصفر."
+                    }
+                ]
+            },
+            "lecture2": {
+                "title": "Head and Neck Assessment",
+                "questions": [
+                    {
+                        "id": 1,
+                        "level": "easy",
+                        "question": "What is the purpose of using a Snellen chart?",
+                        "choices": [
+                            "A) To assess hearing",
+                            "B) To assess visual acuity",
+                            "C) To assess neck mobility",
+                            "D) To assess lymph nodes"
+                        ],
+                        "correct": 1,
+                        "keywords": ["Snellen chart", "visual acuity", "eyes"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الهدف من استخدام مخطط سنيلن (Snellen chart) هو تقييم حدة البصر. كما هو مذكور في المحاضرة، يتم استخدام مخطط سنيلن لتقييم حدة البصر، حيث يُطلب من المريض قراءة الحروف على مسافة 20 قدمًا. لا يُستخدم لتقييم السمع أو حركة الرقبة أو العقد الليمفاوية."
+                    },
+                    {
+                        "id": 2,
+                        "level": "easy",
+                        "question": "What is the normal position of the trachea?",
+                        "choices": [
+                            "A) To the left of the midline",
+                            "B) To the right of the midline",
+                            "C) Centered in the midline",
+                            "D) Slightly below the suprasternal notch"
+                        ],
+                        "correct": 2,
+                        "keywords": ["trachea", "position", "midline"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الموضع الطبيعي للقصبة الهوائية هو في المنتصف (midline). كما هو مذكور في المحاضرة، القصبة الهوائية تكون عادة في المنتصف عند الشق فوق القص. انحراف القصبة الهوائية عن المنتصف قد يشير إلى مشاكل في الرئة أو الغدة الدرقية."
+                    },
+                    {
+                        "id": 3,
+                        "level": "easy",
+                        "question": "What is the function of the lymphatic system?",
+                        "choices": [
+                            "A) Production of hormones",
+                            "B) Production of lymphocytes and antibodies",
+                            "C) Regulation of body temperature",
+                            "D) Digestion of food"
+                        ],
+                        "correct": 1,
+                        "keywords": ["lymphatic system", "lymphocytes", "antibodies"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... وظيفة الجهاز الليمفاوي هي إنتاج الخلايا الليمفاوية والأجسام المضادة. كما هو مذكور في المحاضرة، وظائف الجهاز الليمفاوي تشمل إنتاج الخلايا الليمفاوية، إنتاج الأجسام المضادة، والبلعمة. لا ينتج الهرمونات أو ينظم درجة حرارة الجسم أو يهضم الطعام."
+                    },
+                    {
+                        "id": 4,
+                        "level": "easy",
+                        "question": "What is the normal color of the conjunctiva?",
+                        "choices": [
+                            "A) Yellow",
+                            "B) Red",
+                            "C) Clear and moist",
+                            "D) Blue"
+                        ],
+                        "correct": 2,
+                        "keywords": ["conjunctiva", "color", "normal"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... اللون الطبيعي للملتحمة هو واضح ورطب. كما هو مذكور في المحاضرة، الملتحمة الطبيعية تكون واضحة، رطبة، وناعمة. اللون الأصفر قد يشير إلى اليرقان، واللون الأحمر قد يشير إلى الالتهاب أو النزيف، واللون الأزرق قد يشير إلى نقص الأكسجين."
+                    },
+                    {
+                        "id": 5,
+                        "level": "easy",
+                        "question": "What is the purpose of the Weber test?",
+                        "choices": [
+                            "A) To assess visual acuity",
+                            "B) To assess hearing",
+                            "C) To assess lymph nodes",
+                            "D) To assess thyroid gland"
+                        ],
+                        "correct": 1,
+                        "keywords": ["Weber test", "hearing", "tuning fork"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الهدف من اختبار ويبر (Weber test) هو تقييم السمع. كما هو مذكور في المحاضرة، يتم استخدام شوكة الرنين (tuning fork) ووضعها على قمة رأس المريض لتقييم السمع. لا يُستخدم لتقييم حدة البصر أو العقد الليمفاوية أو الغدة الدرقية."
+                    },
+                    {
+                        "id": 6,
+                        "level": "medium",
+                        "question": "What are the components of the head and neck examination?",
+                        "choices": [
+                            "A) Skull, hair, scalp, face, eyes, ears, nose, mouth, pharynx, neck",
+                            "B) Skin, hair, nails, lymph nodes",
+                            "C) Heart, lungs, abdomen, extremities",
+                            "D) Neurological system only"
+                        ],
+                        "correct": 0,
+                        "keywords": ["head", "neck", "examination", "components"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... مكونات فحص الرأس والرقبة تشمل: الجمجمة، الشعر، فروة الرأس، الوجه، العينين، الأذنين، الأنف، الفم، البلعوم، والرقبة. كما هو مذكور في المحاضرة، هذه هي المكونات الرئيسية لفحص الرأس والرقبة. الخيار ب يتعلق بفحص الجلد والشعر والأظافر، الخيار ج يتعلق بالفحص الجسدي العام، والخيار d يقتصر على الفحص العصبي."
+                    },
+                    {
+                        "id": 7,
+                        "level": "medium",
+                        "question": "How is the thyroid gland assessed?",
+                        "choices": [
+                            "A) By inspection only",
+                            "B) By palpation only",
+                            "C) By auscultation only",
+                            "D) By palpation, observation, and auscultation"
+                        ],
+                        "correct": 3,
+                        "keywords": ["thyroid gland", "assessment", "palpation"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... يتم تقييم الغدة الدرقية عن طريق الجس والملاحظة والاستماع. كما هو مذكور في المحاضرة، تُقَيَّم الغدة الدرقية بالجس والملاحظة والاستماع. الغدة الدرقية الطبيعية غير محسوسة، والجزء الوحيد الذي يمكن جسه عادة هو البرزخ (isthmus). إذا تم اكتشاف تضخم في الغدة الدرقية، يتم الاستماع فوق المنطقة للبحث عن لغط (bruit)."
+                    },
+                    {
+                        "id": 8,
+                        "level": "medium",
+                        "question": "What are the signs of exophthalmos?",
+                        "choices": [
+                            "A) Sunken eyeballs",
+                            "B) Protruding eyeballs with retracted eyelid margins",
+                            "C) Yellow discoloration of the sclera",
+                            "D) Redness of the conjunctiva"
+                        ],
+                        "correct": 1,
+                        "keywords": ["exophthalmos", "protruding eyeballs", "eyelid"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... علامات جحوظ العين (exophthalmos) هي بروز كرات العين مع انكماش حواف الجفون. كما هو مذكور في المحاضرة، جحوظ العين هو بروز كرات العين مصحوبًا بانكماش حواف الجفون. كرات العين الغائرة قد تُرى مع الجفاف الشديد، وتغير لون الصلبة إلى الأصفر قد يشير إلى اليرقان، واحمرار الملتحمة قد يشير إلى الالتهاب."
+                    },
+                    {
+                        "id": 9,
+                        "level": "medium",
+                        "question": "What are the questions to ask in health history for headaches?",
+                        "choices": [
+                            "A) Site, severity, frequency, increasing/decreasing factors, associated symptoms",
+                            "B) Family history, medications, allergies",
+                            "C) Diet, exercise, sleep patterns",
+                            "D) Vision changes, hearing loss, balance problems"
+                        ],
+                        "correct": 0,
+                        "keywords": ["headaches", "health history", "questions"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الأسئلة التي يجب طرحها في التاريخ الصحي للصداع تشمل: الموقع، الشدة، التكرار، العوامل الزائدة/الناقصة، والأعراض المصاحبة. كما هو مذكور في المحاضرة، إذا كان المريض يعاني من صداع مزمن، يجب سؤاله عن هذه العناصر. الخيارات الأخرى تحتوي على أسئلة مهمة ولكنها ليست محددة لتقييم الصداع."
+                    },
+                    {
+                        "id": 10,
+                        "level": "medium",
+                        "question": "How is visual acuity measured using the Snellen chart?",
+                        "choices": [
+                            "A) By asking the patient to read the chart at 10 feet",
+                            "B) By asking the patient to read the chart at 20 feet",
+                            "C) By asking the patient to identify objects at 30 feet",
+                            "D) By asking the patient to read the chart at 5 feet"
+                        ],
+                        "correct": 1,
+                        "keywords": ["visual acuity", "Snellen chart", "20 feet"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... يتم قياس حدة البصر باستخدام مخطط سنيلن بطلب من المريض قراءة المخطط على مسافة 20 قدمًا. كما هو مذكور في المحاضرة، يتم وضع مخطط سنيلن على مسافة 20 قدمًا أمام المريض، ويُطلب من المريض تغطية عين واحدة وقراءة السطور. البصر الطبيعي هو 20/20."
+                    },
+                    {
+                        "id": 11,
+                        "level": "hard",
+                        "question": "What are the steps in assessing the lymphatic system?",
+                        "choices": [
+                            "A) Inspection, percussion, auscultation",
+                            "B) Inspection, palpation using pads of fingers 2, 3, 4 in gentle circular motion",
+                            "C) Palpation only",
+                            "D) Auscultation only"
+                        ],
+                        "correct": 1,
+                        "keywords": ["lymphatic system", "assessment", "inspection", "palpation"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... خطوات تقييم الجهاز الليمفاوي هي: الفحص البصري، ثم الجس باستخدام وسائد الأصابع 2، 3، 4 في حركة دائرية لطيفة. كما هو مذكور في المحاضرة، يتم فحص الجهاز الليمفاوي أولاً بالبحث عن العقد الليمفاوية المتضخمة، ثم جسها بلطف باستخدام وسائد الأصابع 2، 3، 4 في حركة دائرية لطيفة. الخيارات الأخرى غير صحيحة لأنها لا تتبع الخطوات الصحيحة الموصوفة في المحاضرة."
+                    },
+                    {
+                        "id": 12,
+                        "level": "hard",
+                        "question": "What are the abnormal findings in eye assessment and their interpretation?",
+                        "choices": [
+                            "A) Exophthalmos - hypoxia, Sunken eyeballs - dehydration, Yellow sclera - jaundice",
+                            "B) Exophthalmos - hyperthyroidism, Sunken eyeballs - dehydration, Yellow sclera - jaundice",
+                            "C) Exophthalmos - dehydration, Sunken eyeballs - hyperthyroidism, Yellow sclera - anemia",
+                            "D) Exophthalmos - anemia, Sunken eyeballs - hyperthyroidism, Yellow sclera - hypoxia"
+                        ],
+                        "correct": 1,
+                        "keywords": ["eye assessment", "abnormal findings", "interpretation"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... التشخيص الصحيح للنتائج غير الطبيعية في تقييم العين هو: جحوظ العين - فرط نشاط الغدة الدرقية، كرات العين الغائرة - الجفاف، الصلبة الصفراء - اليرقان. كما هو مذكور في المحاضرة، جحوظ العين قد يرى مع فرط نشاط الغدة الدرقية، وكرات العين الغائرة قد تُرى مع الجفاف الشديد، وتغير لون الصلبة إلى الأصفر قد يشير إلى اليرقان. الخيارات الأخرى تحتوي على تفسيرات غير صحيحة."
+                    },
+                    {
+                        "id": 13,
+                        "level": "hard",
+                        "question": "What are the techniques for assessing the ears?",
+                        "choices": [
+                            "A) Inspection, palpation, otoscopic assessment, whisper test, Weber test",
+                            "B) Inspection only",
+                            "C) Palpation only",
+                            "D) Otoscopic assessment only"
+                        ],
+                        "correct": 0,
+                        "keywords": ["ears", "assessment", "techniques"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... تقنيات تقييم الأذنين تشمل: الفحص البصري، الجس، التقييم باستخدام منظار الأذن، اختبار الهمس، واختبار ويبر. كما هو مذكور في المحاضرة، يتضمن التقييم الجسدي للأذنين الفحص البصري والجس للأذن الخارجية، والتقييم باستخدام منظار الأذن، واختبارات السمع مثل اختبار الهمس واختبار ويبر. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    },
+                    {
+                        "id": 14,
+                        "level": "hard",
+                        "question": "What are the signs and symptoms of thyroid disorders?",
+                        "choices": [
+                            "A) Enlarged, tender gland - thyroiditis, Bruit - increased blood flow",
+                            "B) Enlarged, tender gland - hypothyroidism, Bruit - decreased blood flow",
+                            "C) Enlarged, tender gland - hyperthyroidism, Bruit - normal blood flow",
+                            "D) Enlarged, tender gland - cancer, Bruit - normal blood flow"
+                        ],
+                        "correct": 0,
+                        "keywords": ["thyroid disorders", "signs", "symptoms"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... علامات وأعراض اضطرابات الغدة الدرقية هي: غدة متضخمة ومؤلمة - التهاب الغدة الدرقية، لغط - زيادة تدفق الدم. كما هو مذكور في المحاضرة، الغدة المتضخمة والمؤلمة قد تكون نتيجة لالتهاب الغدة الدرقية، واللغط (bruit) هو صوت اهتزاز تدفق الدم عبر الشرايين، ويُسمع مع الغدة المتضخمة. الخيارات الأخرى تحتوي على تفسيرات غير صحيحة."
+                    },
+                    {
+                        "id": 15,
+                        "level": "hard",
+                        "question": "What are the components of a comprehensive health history for head and neck assessment?",
+                        "choices": [
+                            "A) Current symptoms, past history, family history, lifestyle",
+                            "B) Only current symptoms",
+                            "C) Only past history",
+                            "D) Only family history"
+                        ],
+                        "correct": 0,
+                        "keywords": ["health history", "head", "neck", "comprehensive"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... مكونات التاريخ الصحي الشامل لتقييم الرأس والرقبة تشمل: الأعراض الحالية، التاريخ المرضي السابق، التاريخ العائلي، ونمط الحياة. كما هو مذكور في المحاضرة، يجب سؤال المريض عن الأعراض الحالية مثل الكتل أو الآفات أو صعوبة الحركة، والتاريخ المرضي السابق، والتاريخ العائلي لسرطان الرأس والرقبة، ونمط الحياة مثل التدخين. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    }
+                ]
+            },
+            "lecture3": {
+                "title": "Introduction on Health Assessment",
+                "questions": [
+                    {
+                        "id": 1,
+                        "level": "easy",
+                        "question": "What is the first step of the nursing process?",
+                        "choices": [
+                            "A) Diagnosis",
+                            "B) Planning",
+                            "C) Assessment",
+                            "D) Implementation"
+                        ],
+                        "correct": 2,
+                        "keywords": ["nursing process", "first step", "assessment"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... التقييم (Assessment) هو الخطوة الأولى في عملية التمريض. كما هو مذكور في المحاضرة، عملية التمريض تتكون من: التقييم (جمع البيانات الموضوعية والذاتية)، التشخيص، التخطيط، التنفيذ، والتقييم. التقييم هو دائمًا الخطوة الأولى التي تبدأ بها عملية التمريض."
+                    },
+                    {
+                        "id": 2,
+                        "level": "easy",
+                        "question": "What is the difference between subjective and objective data?",
+                        "choices": [
+                            "A) Subjective data is observed by the healthcare professional, objective data is reported by the patient",
+                            "B) Subjective data is reported by the patient, objective data is observed by the healthcare professional",
+                            "C) Both are reported by the patient",
+                            "D) Both are observed by the healthcare professional"
+                        ],
+                        "correct": 1,
+                        "keywords": ["subjective data", "objective data", "patient", "healthcare professional"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الفرق بين البيانات الذاتية والموضوعية هو أن البيانات الذاتية يبلغ بها المريض، بينما البيانات الموضوعية يلاحظها أخصائي الرعاية الصحية. كما هو مذكور في المحاضرة، البيانات الذاتية (الأعراض) هي من وجهة نظر المريض وتشمل المشاعر والإدراكات والمخاوف، بينما البيانات الموضوعية (العلامات) يتم الحصول عليها من خلال الملاحظة أو القياس من قبل أخصائي الرعاية الصحية."
+                    },
+                    {
+                        "id": 3,
+                        "level": "easy",
+                        "question": "What is the purpose of the introductory phase of the interview?",
+                        "choices": [
+                            "A) To collect data about the patient's health status",
+                            "B) To establish rapport and ensure a comfortable setting",
+                            "C) To summarize the data collected",
+                            "D) To formulate nursing diagnoses"
+                        ],
+                        "correct": 1,
+                        "keywords": ["introductory phase", "interview", "rapport"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الهدف من المرحلة التمهيدية للمقابلة هو إ建立 العلاقة وضمان بيئة مريحة. كما هو مذكور في المحاضرة، المرحلة التمهيدية تهدف إلى إ建立 العلاقة بين الممرض والمريض، وضمان بيئة مريحة، وبيان الغرض من المقابلة. جمع البيانات يتم في المرحلة العاملة، وتلخيص البيانات يتم في مرحلة الإنتهاء، وصياغة التشخيصات التمريضية يتم بعد تحليل البيانات."
+                    },
+                    {
+                        "id": 4,
+                        "level": "easy",
+                        "question": "What is the purpose of health assessment?",
+                        "choices": [
+                            "A) To prescribe medications",
+                            "B) To identify the patient's health status and actual/potential health problems",
+                            "C) To perform surgical procedures",
+                            "D) To order laboratory tests"
+                        ],
+                        "correct": 1,
+                        "keywords": ["health assessment", "purpose", "health status"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الهدف من التقييم الصحي هو تحديد حالة المريض الصحية والمشاكل الصحية الفعلية/المحتملة. كما هو مذكور في المحاضرة، أغراض التقييم الصحي تشمل: تحديد حالة المريض الصحية، وتحديد المشاكل الصحية الفعلية و/أو المحتملة، وإ建立 تشخيصات التمريض وتخطيط رعاية المريض، وتقييم النتائج وتقدم حالة المريض. لا يهدف إلى وصف الأدوية أو إجراء العمليات الجراحية أو طلب الاختبارات المعملية بشكل مباشر."
+                    },
+                    {
+                        "id": 5,
+                        "level": "easy",
+                        "question": "What is a closed-ended question?",
+                        "choices": [
+                            "A) A question that requires a detailed explanation",
+                            "B) A question that can be answered with \"yes\" or \"no\"",
+                            "C) A question that encourages the patient to talk freely",
+                            "D) A question that uses therapeutic communication techniques"
+                        ],
+                        "correct": 1,
+                        "keywords": ["closed-ended question", "yes", "no"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... السؤال المغلق هو سؤال يمكن الإجابة عليه بـ \"نعم\" أو \"لا\". كما هو مذكور في المحاضرة، السؤال المغلق يتطلب إجابة من كلمة أو كلمتين من المريض والتي تتطلب إجابة بنعم أو لا. على عكس السؤال المفتوح الذي يشجع المريض على التحدث بحرية."
+                    },
+                    {
+                        "id": 6,
+                        "level": "medium",
+                        "question": "What are the types of assessment?",
+                        "choices": [
+                            "A) Comprehensive, focused, follow-up, emergency",
+                            "B) Only comprehensive",
+                            "C) Only focused",
+                            "D) Only emergency"
+                        ],
+                        "correct": 0,
+                        "keywords": ["types", "assessment", "comprehensive", "focused"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... أنواع التقييم هي: شامل، مركز، متابعة، وطوارئ. كما هو مذكور في المحاضرة، هناك أربعة أنواع من التقييم: التقييم الشامل (عند القبول)، وتقييم المتابعة (بعد تحديد مشكلة صحية)، والتقييم المركز (عند وجود مشكلة صحية محددة تحتاج إلى اهتمام فوري)، والتقييم في حالات الطوارئ (عندما يكون المريض في خطر الموت). الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    },
+                    {
+                        "id": 7,
+                        "level": "medium",
+                        "question": "What are the steps of assessment?",
+                        "choices": [
+                            "A) Collecting data, verification, interpretation, documentation",
+                            "B) Only collecting data",
+                            "C) Only documentation",
+                            "D) Only interpretation"
+                        ],
+                        "correct": 0,
+                        "keywords": ["steps", "assessment", "collecting data", "verification"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... خطوات التقييم هي: جمع البيانات، التحقق، التفسير، والتوثيق. كما هو مذكور في المحاضرة، عملية تقييم المريض تتضمن: جمع البيانات من مصادر متنوعة، التحقق من البيانات، تفسير البيانات، وتسجيل أو توثيق البيانات. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    },
+                    {
+                        "id": 8,
+                        "level": "medium",
+                        "question": "What are the components of a complete health history?",
+                        "choices": [
+                            "A) Demographic data, chief complaints, history of present health concern, past health history, current health status, psychosocial history",
+                            "B) Only chief complaints",
+                            "C) Only past health history",
+                            "D) Only psychosocial history"
+                        ],
+                        "correct": 0,
+                        "keywords": ["health history", "components", "demographic data", "chief complaints"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... مكونات التاريخ الصحي الكامل تشمل: البيانات الديموغرافية، الشكاوى الرئيسية، تاريخ الاهتمام الصحي الحالي، التاريخ الصحي الماضي، الحالة الصحية الحالية، والتاريخ النفسي الاجتماعي. كما هو مذكور في المحاضرة، هذه هي المكونات الرئيسية للتاريخ الصحي الكامل. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    },
+                    {
+                        "id": 9,
+                        "level": "medium",
+                        "question": "What are the phases of interview?",
+                        "choices": [
+                            "A) Introductory, working, termination",
+                            "B) Only introductory",
+                            "C) Only working",
+                            "D) Only termination"
+                        ],
+                        "correct": 0,
+                        "keywords": ["interview", "phases", "introductory", "working"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... مراحل المقابلة هي: تمهيدية، عاملة، وإنهاء. كما هو مذكور في المحاضرة، المقابلة تتضمن ثلاث مراحل: المرحلة التمهيدية (إ建立 العلاقة وضمان بيئة مريحة)، والمرحلة العاملة (جمع البيانات)، ومرحلة الإنتهاء (تلخيص البيانات المجمعة). الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    },
+                    {
+                        "id": 10,
+                        "level": "medium",
+                        "question": "What is the COLDSPA mnemonic used for?",
+                        "choices": [
+                            "A) To describe the chief complaint",
+                            "B) To document vital signs",
+                            "C) To perform physical examination",
+                            "D) To formulate nursing diagnoses"
+                        ],
+                        "correct": 0,
+                        "keywords": ["COLDSPA", "mnemonic", "chief complaint"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الذاكرة المساعدة COLDSPA تُستخدم لوصف الشكوى الرئيسية. كما هو مذكور في المحاضرة، COLDSPA هي اختصار لـ: Character (الطبيعة)، Onset (البداية)، Location (الموقع)، Duration (المدة)، Severity (الشدة)، Pattern (النمط)، وAssociated factors (العوامل المصاحبة). تُستخدم هذه الذاكرة المساعدة لوصف الشكوى الرئيسية بالتفصيل."
+                    },
+                    {
+                        "id": 11,
+                        "level": "hard",
+                        "question": "What are the communication skills needed for effective interview?",
+                        "choices": [
+                            "A) Listening, silence, open-ended questions, avoiding closed-ended questions, avoiding misleading questions",
+                            "B) Only listening",
+                            "C) Only open-ended questions",
+                            "D) Only avoiding misleading questions"
+                        ],
+                        "correct": 0,
+                        "keywords": ["communication skills", "interview", "listening", "open-ended questions"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... مهارات التواصل اللازمة لمقابلة فعالة تشمل: الاستماع، الصمت، الأسئلة المفتوحة، تجنب الأسئلة المغلقة، وتجنب الأسئلة المضللة. كما هو مذكور في المحاضرة، هذه هي المهارات الرئيسية التي يجب استخدامها أثناء المقابلة لضمان جمع بيانات دقيقة وفعالة. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    },
+                    {
+                        "id": 12,
+                        "level": "hard",
+                        "question": "What are the components of the working phase of the interview?",
+                        "choices": [
+                            "A) Collecting personal data, collecting data about patient's health status, identifying patient's health needs",
+                            "B) Establishing rapport",
+                            "C) Summarizing the data collected",
+                            "D) Stating the purpose of the interview"
+                        ],
+                        "correct": 0,
+                        "keywords": ["working phase", "interview", "collecting data", "health needs"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... مكونات المرحلة العاملة للمقابلة تشمل: جمع البيانات الشخصية، وجمع البيانات عن حالة المريض الصحية، وتحديد احتياجات المريض الصحية. كما هو مذكور في المحاضرة، المرحلة العاملة هي مرحلة جمع البيانات، وتشمل جمع البيانات الشخصية، وجمع البيانات عن حالة المريض الصحية، وتحديد احتياجات المريض الصحية. إ建立 العلاقة يتم في المرحلة التمهيدية، وتلخيص البيانات يتم في مرحلة الإنتهاء، وبيان الغرض من المقابلة يتم في المرحلة التمهيدية."
+                    },
+                    {
+                        "id": 13,
+                        "level": "hard",
+                        "question": "What are the tips for conducting an effective interview?",
+                        "choices": [
+                            "A) Demonstrate professional appearance, provide privacy, provide quiet environment, address patient by appropriate title, introduce yourself, request permission",
+                            "B) Only demonstrate professional appearance",
+                            "C) Only provide privacy",
+                            "D) Only introduce yourself"
+                        ],
+                        "correct": 0,
+                        "keywords": ["interview", "tips", "privacy", "professional appearance"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... نصائح لإجراء مقابلة فعالة تشمل: إظهار المظهر الاحترافي، توفير الخصوصية، توفير بيئة هادئة، مخاطبة المريض باللقب المناسب، تقديم نفسك، وطلب الإذن. كما هو مذكور في المحاضرة، هذه هي النصائح الرئيسية التي يجب اتباعها لضمان مقابلة فعالة. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    },
+                    {
+                        "id": 14,
+                        "level": "hard",
+                        "question": "What are the components of the chief complaint description?",
+                        "choices": [
+                            "A) Character, onset, location, duration, severity, pattern, associated factors",
+                            "B) Only character",
+                            "C) Only location",
+                            "D) Only severity"
+                        ],
+                        "correct": 0,
+                        "keywords": ["chief complaint", "description", "COLDSPA"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... مكونات وصف الشكوى الرئيسية تشمل: الطبيعة، البداية، الموقع، المدة، الشدة، النمط، والعوامل المصاحبة. كما هو مذكور في المحاضرة، هذه هي المكونات الرئيسية لوصف الشكوى الرئيسية باستخدام الذاكرة المساعدة COLDSPA. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    },
+                    {
+                        "id": 15,
+                        "level": "hard",
+                        "question": "What are the components of the psychosocial history?",
+                        "choices": [
+                            "A) Home situation, significant others, psychological stressors",
+                            "B) Only home situation",
+                            "C) Only significant others",
+                            "D) Only psychological stressors"
+                        ],
+                        "correct": 0,
+                        "keywords": ["psychosocial history", "components", "home situation", "stressors"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... مكونات التاريخ النفسي الاجتماعي تشمل: الوضع المنزلي، الآخرون المهمون، والمُسبِّبات النفسية. كما هو مذكور في المحاضرة، هذه هي المكونات الرئيسية للتاريخ النفسي الاجتماعي الذي يجب جمعه أثناء التقييم الصحي. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    }
+                ]
+            },
+            "lecture4": {
+                "title": "Physical Examination",
+                "questions": [
+                    {
+                        "id": 1,
+                        "level": "easy",
+                        "question": "What is physical examination?",
+                        "choices": [
+                            "A) A systematic approach of collecting objective data about health status",
+                            "B) Collecting subjective data from the patient",
+                            "C) Formulating nursing diagnoses",
+                            "D) Implementing nursing interventions"
+                        ],
+                        "correct": 0,
+                        "keywords": ["physical examination", "objective data", "systematic approach"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الفحص الجسدي هو نهج منهجي لجمع البيانات الموضوعية عن الحالة الصحية. كما هو مذكور في المحاضرة، الفحص الجسدي هو نهج منهجي لجمع البيانات الموضوعية عن الحالة الصحية، ويتم من خلال تقييم مفصل لجميع هياكل الجسم وأعضائه أو أنظمته باستخدام حواس الفاحص (البصر، اللمس، الشم، والسمع)."
+                    },
+                    {
+                        "id": 2,
+                        "level": "easy",
+                        "question": "What is inspection?",
+                        "choices": [
+                            "A) Tapping the person's skin with short sharp strokes",
+                            "B) Assessing characteristics by touching and feeling with hands",
+                            "C) Systematic observation of the client and specific areas of the body",
+                            "D) Listening with a stethoscope to sounds produced by organs"
+                        ],
+                        "correct": 2,
+                        "keywords": ["inspection", "observation", "systematic"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الفحص البصري (inspection) هو الملاحظة المنهجية للمريض والمناطق المحددة من الجسم. كما هو مذكور في المحاضرة، الفحص البصري يشمل فحص المريض للتغيرات في لون الجلد أو درجة حرارته، أو ملاحظة جرح لعلامات الشفاء أو العدوى، أو ملاحظة عامة للون، الحجم، الموقع، الملمس، التناظر، الروائح، والأصوات."
+                    },
+                    {
+                        "id": 3,
+                        "level": "easy",
+                        "question": "What is palpation?",
+                        "choices": [
+                            "A) Tapping the person's skin with short sharp strokes",
+                            "B) Assessing characteristics by touching and feeling with hands",
+                            "C) Systematic observation of the client and specific areas of the body",
+                            "D) Listening with a stethoscope to sounds produced by organs"
+                        ],
+                        "correct": 1,
+                        "keywords": ["palpation", "touching", "feeling"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الجس (palpation) هو تقييم خصائص عضو أو جزء من الجسم عن طريق اللمس والشعور به باليدين أو أطراف الأصابع. كما هو مذكور في المحاضرة، عملية الجس توفر معلومات عن الملمس، درجة الحرارة، الرطوبة، الحركة، والاتساق أو صلابة الهياكل (صلب مقابل سائل)."
+                    },
+                    {
+                        "id": 4,
+                        "level": "easy",
+                        "question": "What is auscultation?",
+                        "choices": [
+                            "A) Tapping the person's skin with short sharp strokes",
+                            "B) Assessing characteristics by touching and feeling with hands",
+                            "C) Systematic observation of the client and specific areas of the body",
+                            "D) Listening with a stethoscope to sounds produced by organs"
+                        ],
+                        "correct": 3,
+                        "keywords": ["auscultation", "stethoscope", "listening"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الاستماع (auscultation) هو الاستماع باستخدام السماعة الطبية إلى الأصوات التي تصدرها الأعضاء مثل القلب والرئتين والأوعية الدموية والأمعاء. كما هو مذكور في المحاضرة، يُستخدم الاستماع للكشف عن وجود الأصوات الطبيعية وغير الطبيعية وتقييمها من حيث الشدة، النغمة، الجودة، التكرار والمدة."
+                    },
+                    {
+                        "id": 5,
+                        "level": "easy",
+                        "question": "What is percussion?",
+                        "choices": [
+                            "A) Tapping the person's skin with short sharp strokes",
+                            "B) Assessing characteristics by touching and feeling with hands",
+                            "C) Systematic observation of the client and specific areas of the body",
+                            "D) Listening with a stethoscope to sounds produced by organs"
+                        ],
+                        "correct": 0,
+                        "keywords": ["percussion", "tapping", "short sharp strokes"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... القرع (percussion) هو النقر على جلد الشخص بضربات قصيرة وحادة لتقييم الهياكل الكامنة. كما هو مذكور في المحاضرة، يتم ذلك عن طريق وضع السبابة أو الوسطى لليد غير المهيمنة بقوة على السطح المراد قرعه، ثم تسليم ضربة واحدة إلى ثلاث ثم تحريك الإصبع غير المهيمن إلى منطقة أخرى."
+                    },
+                    {
+                        "id": 6,
+                        "level": "medium",
+                        "question": "What are the components of physical examination?",
+                        "choices": [
+                            "A) General survey, vital signs measurement, height and weight measurement, body system examination",
+                            "B) Only general survey",
+                            "C) Only vital signs measurement",
+                            "D) Only body system examination"
+                        ],
+                        "correct": 0,
+                        "keywords": ["physical examination", "components", "general survey", "vital signs"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... مكونات الفحص الجسدي تشمل: المسح العام، قياس العلامات الحيوية، قياس الطول والوزن، وفحص أجهزة الجسم. كما هو مذكور في المحاضرة، هذه هي المكونات الرئيسية للفحص الجسدي. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    },
+                    {
+                        "id": 7,
+                        "level": "medium",
+                        "question": "What are the types of palpation?",
+                        "choices": [
+                            "A) Light, moderate, deep, bimanual",
+                            "B) Only light",
+                            "C) Only moderate",
+                            "D) Only deep"
+                        ],
+                        "correct": 0,
+                        "keywords": ["palpation", "types", "light", "deep"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... أنواع الجس تشمل: خفيف، معتدل، عميق، وثنائي اليد. كما هو مذكور في المحاضرة، الجس الخفيف يستخدم للشعور بالنبض وقياس نغمة العضلات وتقييم الألم وملمس سطح الجلد ودرجة الحرارة والرطوبة، والجس المعتدل يستخدم لجس أعضاء الجسم والكتل، والجس العميق يستخدم لتحديد أعضاء البطن أو الهياكل المغطاة بالعضلات السميكة، والجس ثنائي اليد يستخدم يدين."
+                    },
+                    {
+                        "id": 8,
+                        "level": "medium",
+                        "question": "What are the guidelines for effective inspection?",
+                        "choices": [
+                            "A) Be systematic, fully expose the area, use good light, maintain comfortable temperature, observe color/shape/size/symmetry/position/movement, compare bilateral structures",
+                            "B) Only be systematic",
+                            "C) Only use good light",
+                            "D) Only observe color"
+                        ],
+                        "correct": 0,
+                        "keywords": ["inspection", "guidelines", "systematic", "good light"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... إرشادات الفحص البصري الفعال تشمل: كن منهجيًا، اكشف المنطقة بالكامل، استخدم إضاءة جيدة، حافظ على درجة حرارة مريحة، لاحظ اللون/الشكل/الحجم/التناظر/الموضع/الحركة، وقارن الهياكل الثنائية. كما هو مذكور في المحاضرة، هذه هي الإرشادات الرئيسية للفحص البصري الفعال. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    },
+                    {
+                        "id": 9,
+                        "level": "medium",
+                        "question": "What are the percussion sounds and their characteristics?",
+                        "choices": [
+                            "A) Tympany (drum-like), resonance (hollow), hyper-resonance (booming), dullness (thud), flatness (flat)",
+                            "B) Only tympany",
+                            "C) Only resonance",
+                            "D) Only dullness"
+                        ],
+                        "correct": 0,
+                        "keywords": ["percussion sounds", "tympany", "resonance", "dullness"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... أصوات القرع وخصائصها تشمل: الطنين (طبل)، الرنين (جوف)، فرط الرنين (مدو)، الغموض (ثقيل)، والاستواء (مسطح). كما هو مذكور في المحاضرة، هذه هي الأصوات الرئيسية للقرع وخصائصها. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    },
+                    {
+                        "id": 10,
+                        "level": "medium",
+                        "question": "What is olfaction and what can it detect?",
+                        "choices": [
+                            "A) Smelling body odors to detect abnormalities in body systems",
+                            "B) Listening with a stethoscope to sounds produced by organs",
+                            "C) Assessing characteristics by touching and feeling with hands",
+                            "D) Tapping the person's skin with short sharp strokes"
+                        ],
+                        "correct": 0,
+                        "keywords": ["olfaction", "smelling", "body odors"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الشم (olfaction) هو شم روائح الجسم للكشف عن التشوهات في أجهزة الجسم. كما هو مذكور في المحاضرة، الشم هي مهارة أخرى تُستخدم أثناء التقييم، حيث يمكن للكشف عن الروائح اكتشاف التشوهات في أجهزة الجسم. الاستماع يتم باستخدام السماعة الطبية، والجس يتم باليدين، والقرع يتم بالنقر على الجلد."
+                    },
+                    {
+                        "id": 11,
+                        "level": "hard",
+                        "question": "What are the principles for accurate palpation?",
+                        "choices": [
+                            "A) Short fingernails, start with light then deep palpation, palpate tender areas last, client must relax, tell client to take slow deep breaths",
+                            "B) Only short fingernails",
+                            "C) Only start with light then deep palpation",
+                            "D) Only palpate tender areas last"
+                        ],
+                        "correct": 0,
+                        "keywords": ["palpation", "principles", "accurate", "fingernails"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... مبادئ الجس الدقيق تشمل: أظافر قصيرة، ابدأ بالجس الخفيف ثم العميق، جس المناطق الحساسة في النهاية، يجب أن يسترخي العميل، اطلب من العميل أخذ أنفاس عميقة وبطيئة. كما هو مذكور في المحاضرة، هذه هي المبادئ الرئيسية للجس الدقيق. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    },
+                    {
+                        "id": 12,
+                        "level": "hard",
+                        "question": "What are the types of percussion sounds and their clinical significance?",
+                        "choices": [
+                            "A) Tympany (enclosed air), resonance (part air and part solid tissue), hyper-resonance (mostly air), dullness (mostly solid tissue), flatness (very dense tissue)",
+                            "B) Only tympany",
+                            "C) Only resonance",
+                            "D) Only dullness"
+                        ],
+                        "correct": 0,
+                        "keywords": ["percussion sounds", "clinical significance", "tympany", "resonance"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... أنواع أصوات القرع وأهميتها السريرية تشمل: الطنين (هواء محصور)، الرنين (جزء هواء وجزء نسيج صلب)، فرط الرنين (معظمه هواء)، الغموض (معظمه نسيج صلب)، والاستواء (نسيج كثيف جدًا). كما هو مذكور في المحاضرة، هذه هي الأنواع الرئيسية لأصوات القرع وأهميتها السريرية. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    },
+                    {
+                        "id": 13,
+                        "level": "hard",
+                        "question": "What are the techniques for auscultation?",
+                        "choices": [
+                            "A) Use diaphragm for high-pitched sounds, use bell for low-pitched sounds, press firmly for diaphragm, press lightly for bell",
+                            "B) Only use diaphragm for high-pitched sounds",
+                            "C) Only use bell for low-pitched sounds",
+                            "D) Only press firmly for diaphragm"
+                        ],
+                        "correct": 0,
+                        "keywords": ["auscultation", "techniques", "diaphragm", "bell"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... تقنيات الاستماع تشمل: استخدام الغشاء للأصوات عالية النغمة، استخدام الجرس للأصوات منخفضة النغمة، الضغط بقوة للغشاء، والضغط بلطف للجرس. كما هو مذكور في المحاضرة، هذه هي التقنيات الرئيسية للاستماع. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    },
+                    {
+                        "id": 14,
+                        "level": "hard",
+                        "question": "What are the abnormal odors and their interpretation?",
+                        "choices": [
+                            "A) Alcohol odor (ingestion of alcohol), ammonia odor (urinary tract infection), bad odor from skin (poor hygiene), halitosis (poor dental hygiene)",
+                            "B) Only alcohol odor",
+                            "C) Only ammonia odor",
+                            "D) Only bad odor from skin"
+                        ],
+                        "correct": 0,
+                        "keywords": ["abnormal odors", "interpretation", "alcohol", "ammonia"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... الروائح غير الطبيعية وتفسيرها تشمل: رائحة الكحول (تناول الكحول)، رائحة الأمونيا (عدوى المسالك البولية)، رائحة كريهة من الجلد (نقص النظافة)، ورائحة الفم الكريهة (نقص نظافة الأسنان). كما هو مذكور في المحاضرة، هذه هي الروائح غير الطبيعية الرئيسية وتفسيرها. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    },
+                    {
+                        "id": 15,
+                        "level": "hard",
+                        "question": "What are the steps in preparing the environment for physical examination?",
+                        "choices": [
+                            "A) Prepare equipment, ensure quiet/warm/well-lit room, maintain privacy",
+                            "B) Only prepare equipment",
+                            "C) Only ensure quiet room",
+                            "D) Only maintain privacy"
+                        ],
+                        "correct": 0,
+                        "keywords": ["environment", "physical examination", "equipment", "privacy"],
+                        "explanation": "💡 تعالى نفهمها ببساطة... خطوات إعداد البيئة للفحص الجسدي تشمل: تحضير المعدات، ضمان غرفة هادئة/دافئة/مضاءة جيدًا، والحفاظ على الخصوصية. كما هو مذكور في المحاضرة، هذه هي الخطوات الرئيسية لإعداد البيئة للفحص الجسدي. الخيارات الأخرى غير صحيحة لأنها غير شاملة."
+                    }
+                ]
+            }
+        };
+
+        // DOM elements
+        const homePage = document.getElementById('homePage');
+        const examPage = document.getElementById('examPage');
+        const resultsPage = document.getElementById('resultsPage');
+        const lectureCards = document.getElementById('lectureCards');
+        const examTitle = document.getElementById('examTitle');
+        const questionsContainer = document.getElementById('questionsContainer');
+        const timer = document.getElementById('timer');
+        const progress = document.getElementById('progress');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const messageDisplay = document.getElementById('messageDisplay');
+        const resultsContainer = document.getElementById('resultsContainer');
+
+        // Buttons
+        const backToHome = document.getElementById('backToHome');
+        const finishExam = document.getElementById('finishExam');
+        const retakeExam = document.getElementById('retakeExam');
+        const backToHomeFromResults = document.getElementById('backToHomeFromResults');
+
+        // Current exam state
+        let currentLecture = null;
+        let userAnswers = {};
+        let timerInterval = null;
+        let timeRemaining = 15 * 60; // 15 minutes in seconds
+
+        // Initialize the app
+        function init() {
+            renderLectureCards();
+            setupEventListeners();
+        }
+
+        // Render lecture cards on home page
+        function renderLectureCards() {
+            lectureCards.innerHTML = '';
+            
+            Object.keys(examData).forEach(lectureKey => {
+                const lecture = examData[lectureKey];
+                const card = document.createElement('div');
+                card.className = 'lecture-card';
+                card.innerHTML = `
+                    <h3>${lecture.title}</h3>
+                    <p>${lecture.questions.length} questions</p>
+                `;
+                card.addEventListener('click', () => startExam(lectureKey));
+                lectureCards.appendChild(card);
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            backToHome.addEventListener('click', showHomePage);
+            finishExam.addEventListener('click', finishExamHandler);
+            retakeExam.addEventListener('click', retakeExamHandler);
+            backToHomeFromResults.addEventListener('click', showHomePage);
+        }
+
+        // Start exam for a specific lecture
+        function startExam(lectureKey) {
+            currentLecture = lectureKey;
+            userAnswers = {};
+            timeRemaining = 15 * 60; // Reset timer
+            
+            const lecture = examData[lectureKey];
+            examTitle.textContent = lecture.title;
+            
+            renderQuestions();
+            startTimer();
+            
+            showExamPage();
+        }
+
+        // Render questions
+        function renderQuestions() {
+            questionsContainer.innerHTML = '';
+            
+            const lecture = examData[currentLecture];
+            
+            lecture.questions.forEach(question => {
+                const questionCard = document.createElement('div');
+                questionCard.className = 'question-card';
+                
+                const difficultyClass = question.level;
+                const difficultyText = question.level.charAt(0).toUpperCase() + question.level.slice(1);
+                
+                questionCard.innerHTML = `
+                    <div class="question-header">
+                        <h3>Question ${question.id}</h3>
+                        <span class="difficulty ${difficultyClass}">${difficultyText}</span>
+                    </div>
+                    <p class="question-text">${question.question}</p>
+                    <div class="choices">
+                        ${question.choices.map((choice, index) => `
+                            <label class="choice">
+                                <input type="radio" name="question-${question.id}" value="${index}">
+                                <span>${choice}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+                
+                questionsContainer.appendChild(questionCard);
+            });
+        }
+
+        // Start timer
+        function startTimer() {
+            updateTimerDisplay();
+            updateProgressBar();
+            
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+                updateProgressBar();
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    finishExamHandler();
+                }
+            }, 1000);
+        }
+
+        // Update timer display
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            timer.textContent = formattedTime;
+            
+            // Change timer color based on remaining time
+            timer.classList.remove('warning', 'danger');
+            if (timeRemaining <= 60) {
+                timer.classList.add('danger');
+            } else if (timeRemaining <= 180) {
+                timer.classList.add('warning');
+            }
+        }
+
+        // Update progress bar
+        function updateProgressBar() {
+            const totalTime = 15 * 60;
+            const percentage = (timeRemaining / totalTime) * 100;
+            progress.style.width = `${percentage}%`;
+        }
+
+        // Finish exam handler
+        function finishExamHandler() {
+            clearInterval(timerInterval);
+            collectUserAnswers();
+            showResults();
+        }
+
+        // Collect user answers
+        function collectUserAnswers() {
+            const lecture = examData[currentLecture];
+            
+            lecture.questions.forEach(question => {
+                const selectedOption = document.querySelector(`input[name="question-${question.id}"]:checked`);
+                userAnswers[question.id] = selectedOption ? parseInt(selectedOption.value) : null;
+            });
+        }
+
+        // Show results
+        function showResults() {
+            const lecture = examData[currentLecture];
+            let correctCount = 0;
+            
+            resultsContainer.innerHTML = '';
+            
+            lecture.questions.forEach(question => {
+                const userAnswer = userAnswers[question.id];
+                const isCorrect = userAnswer === question.correct;
+                
+                if (isCorrect) correctCount++;
+                
+                const resultQuestion = document.createElement('div');
+                resultQuestion.className = 'result-question';
+                
+                const difficultyClass = question.level;
+                const difficultyText = question.level.charAt(0).toUpperCase() + question.level.slice(1);
+                
+                // Highlight keywords in question
+                let highlightedQuestion = question.question;
+                question.keywords.forEach(keyword => {
+                    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+                    highlightedQuestion = highlightedQuestion.replace(regex, `<span class="highlight">${keyword}</span>`);
+                });
+                
+                resultQuestion.innerHTML = `
+                    <div class="result-question-header">
+                        <h3>Question ${question.id}</h3>
+                        <span class="difficulty ${difficultyClass}">${difficultyText}</span>
+                    </div>
+                    <p class="question-text">${highlightedQuestion}</p>
+                    <div class="correct-answer">
+                        <strong>Correct Answer:</strong> ${question.choices[question.correct]}
+                    </div>
+                    ${userAnswer !== null && !isCorrect ? `
+                        <div class="wrong-answer">
+                            <strong>Your Answer:</strong> ${question.choices[userAnswer]}
+                        </div>
+                    ` : ''}
+                    <div class="explanation arabic">
+                        ${question.explanation}
+                    </div>
+                `;
+                
+                resultsContainer.appendChild(resultQuestion);
+            });
+            
+            // Calculate and display score
+            const scorePercentage = Math.round((correctCount / lecture.questions.length) * 100);
+            scoreDisplay.textContent = `${correctCount}/${lecture.questions.length} – ${scorePercentage}%`;
+            
+            // Display motivational message based on score
+            let message = '';
+            if (scorePercentage >= 90) {
+                message = 'Excellent work! You have mastered this material! 🎉';
+            } else if (scorePercentage >= 70) {
+                message = 'Good job! You have a solid understanding of this material! 👍';
+            } else if (scorePercentage >= 50) {
+                message = 'Not bad! With a bit more study, you\'ll improve! 💪';
+            } else {
+                message = 'Keep studying! Practice makes perfect! 📚';
+            }
+            messageDisplay.textContent = message;
+            
+            showResultsPage();
+        }
+
+        // Retake exam handler
+        function retakeExamHandler() {
+            startExam(currentLecture);
+        }
+
+        // Page navigation functions
+        function showHomePage() {
+            homePage.style.display = 'block';
+            examPage.style.display = 'none';
+            resultsPage.style.display = 'none';
+        }
+
+        function showExamPage() {
+            homePage.style.display = 'none';
+            examPage.style.display = 'block';
+            resultsPage.style.display = 'none';
+        }
+
+        function showResultsPage() {
+            homePage.style.display = 'none';
+            examPage.style.display = 'none';
+            resultsPage.style.display = 'block';
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
